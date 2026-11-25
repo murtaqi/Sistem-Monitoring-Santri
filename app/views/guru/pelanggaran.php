@@ -1,5 +1,6 @@
 <?php
 $records = $data['pelanggaran'] ?? [];
+$santriList = $data['santri'] ?? [];
 $escape = static function ($value) {
     return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
 };
@@ -7,6 +8,7 @@ $escape = static function ($value) {
 <p class="breadcrumb">Kegiatan <span aria-hidden="true">/</span> Pelanggaran Santri</p>
 <h1>Pelanggaran Santri</h1>
 <p class="subtitle">Catatan pelanggaran dan kedisiplinan santri.</p>
+<?php Flasher::flash(); ?>
 <div class="summary">
     <span class="summary-icon" aria-hidden="true">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
@@ -44,8 +46,8 @@ $escape = static function ($value) {
                     <th scope="col">Tanggal</th>
                     <th scope="col">Nama Santri</th>
                     <th scope="col">Jenis Pelanggaran</th>
-                    <th scope="col">Poin</th>
-                    <th scope="col">Tindakan</th>
+                    <th scope="col">Sanksi</th>
+                    <th scope="col">Status Sanksi</th>
                     <th scope="col">Aksi</th>
                 </tr>
             </thead>
@@ -56,24 +58,26 @@ $escape = static function ($value) {
                         <td><?= $escape($record['tanggal'] ?? '-') ?></td>
                         <td class="admin-name"><?= $escape($record['nama_santri'] ?? '-') ?></td>
                         <td><?= $escape($record['jenis_pelanggaran'] ?? '-') ?></td>
+                        <td><?= $escape($record['sanksi'] ?? '-') ?></td>
                         <td>
                             <?php
-                            $poin = (int)($record['poin'] ?? 0);
-                            $poinColor = $poin >= 10 ? 'background:#fee2e2;color:#991b1b;' : ($poin >= 5 ? 'background:#fef3c7;color:#92400e;' : 'background:#f3f4f6;color:#374151;');
+                            $statusSanksi = $record['status_sanksi'] ?? 'Belum Selesai';
+                            $statusColor = strtolower($statusSanksi) === 'selesai'
+                                ? 'background:#d1fae5;color:#065f46;'
+                                : 'background:#fee2e2;color:#991b1b;';
                             ?>
-                            <span style="padding:3px 10px;border-radius:12px;font-size:12px;font-weight:600;<?= $poinColor ?>"><?= $escape($poin) ?> poin</span>
+                            <span style="padding:3px 10px;border-radius:12px;font-size:12px;font-weight:600;<?= $statusColor ?>"><?= $escape($statusSanksi) ?></span>
                         </td>
-                        <td><?= $escape($record['tindakan'] ?? '-') ?></td>
                         <td class="actions">
                             <button type="button" class="btn btn-sm btn-outline-primary btn-edit"
                                     data-bs-toggle="modal"
                                     data-bs-target="#modalPelanggaran"
                                     data-id="<?= $escape($record['id_pelanggaran'] ?? '') ?>"
                                     data-tanggal="<?= $escape($record['tanggal'] ?? '') ?>"
-                                    data-santri="<?= $escape($record['nama_santri'] ?? '') ?>"
+                                    data-id-santri="<?= $escape($record['id_santri'] ?? '') ?>"
                                     data-jenis="<?= $escape($record['jenis_pelanggaran'] ?? '') ?>"
-                                    data-poin="<?= $escape($record['poin'] ?? '') ?>"
-                                    data-tindakan="<?= $escape($record['tindakan'] ?? '') ?>">
+                                    data-sanksi="<?= $escape($record['sanksi'] ?? '') ?>"
+                                    data-status="<?= $escape($record['status_sanksi'] ?? 'Belum Selesai') ?>">
                                 Edit
                             </button>
                             <a href="<?= BASEURL ?>/Guru/deletePelanggaran/<?= $escape($record['id_pelanggaran'] ?? '') ?>" class="btn btn-sm btn-outline-danger" onclick="return confirm('Hapus data pelanggaran ini?')">Hapus</a>
@@ -112,20 +116,30 @@ $escape = static function ($value) {
                         <input type="date" class="form-control" id="tanggal" name="tanggal" required value="<?= date('Y-m-d') ?>">
                     </div>
                     <div class="mb-3">
-                        <label for="nama_santri" class="form-label">Nama Santri</label>
-                        <input type="text" class="form-control" id="nama_santri" name="nama_santri" required placeholder="Masukkan nama santri">
+                        <label for="id_santri" class="form-label">Santri</label>
+                        <select class="form-select" id="id_santri" name="id_santri" required>
+                            <option value="">-- Pilih Santri --</option>
+                            <?php foreach ($santriList as $santri): ?>
+                                <option value="<?= $escape($santri['id_santri'] ?? '') ?>">
+                                    <?= $escape($santri['nama_santri'] ?? '') ?> (<?= $escape($santri['nis'] ?? '-') ?> - <?= $escape($santri['kelas'] ?? '-') ?>)
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
                     </div>
                     <div class="mb-3">
-                        <label for="jenis" class="form-label">Jenis Pelanggaran</label>
-                        <input type="text" class="form-control" id="jenis" name="jenis" required placeholder="Contoh: Terlambat sholat berjamaah">
+                        <label for="jenis_pelanggaran" class="form-label">Jenis Pelanggaran</label>
+                        <input type="text" class="form-control" id="jenis_pelanggaran" name="jenis_pelanggaran" required placeholder="Contoh: Terlambat sholat berjamaah">
                     </div>
                     <div class="mb-3">
-                        <label for="poin" class="form-label">Poin Pelanggaran</label>
-                        <input type="number" class="form-control" id="poin" name="poin" min="1" max="100" required placeholder="Jumlah poin">
+                        <label for="sanksi" class="form-label">Sanksi / Tindakan</label>
+                        <textarea class="form-control" id="sanksi" name="sanksi" rows="2" required placeholder="Contoh: Baca 1/2 juz"></textarea>
                     </div>
                     <div class="mb-3">
-                        <label for="tindakan" class="form-label">Tindakan / Sanksi</label>
-                        <textarea class="form-control" id="tindakan" name="tindakan" rows="2" placeholder="Tindakan yang diberikan (opsional)"></textarea>
+                        <label for="status_sanksi" class="form-label">Status Sanksi</label>
+                        <select class="form-select" id="status_sanksi" name="status_sanksi" required>
+                            <option value="Belum Selesai">Belum Selesai</option>
+                            <option value="Selesai">Selesai</option>
+                        </select>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -159,10 +173,10 @@ $escape = static function ($value) {
             submitBtn.textContent = 'Simpan Perubahan';
             document.getElementById('id_pelanggaran').value = btn.dataset.id;
             document.getElementById('tanggal').value = btn.dataset.tanggal;
-            document.getElementById('nama_santri').value = btn.dataset.santri;
-            document.getElementById('jenis').value = btn.dataset.jenis;
-            document.getElementById('poin').value = btn.dataset.poin;
-            document.getElementById('tindakan').value = btn.dataset.tindakan;
+            document.getElementById('id_santri').value = btn.dataset.idSantri;
+            document.getElementById('jenis_pelanggaran').value = btn.dataset.jenis;
+            document.getElementById('sanksi').value = btn.dataset.sanksi;
+            document.getElementById('status_sanksi').value = btn.dataset.status;
         });
     });
 

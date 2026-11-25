@@ -1,5 +1,6 @@
 <?php
 $records = $data['hafalan'] ?? [];
+$santriList = $data['santri'] ?? [];
 $escape = static function ($value) {
     return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
 };
@@ -7,6 +8,7 @@ $escape = static function ($value) {
 <p class="breadcrumb">Kegiatan <span aria-hidden="true">/</span> Hafalan Santri</p>
 <h1>Hafalan Santri</h1>
 <p class="subtitle">Catatan setoran hafalan Al-Qur'an santri.</p>
+<?php Flasher::flash(); ?>
 <div class="summary">
     <span class="summary-icon" aria-hidden="true">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
@@ -45,7 +47,9 @@ $escape = static function ($value) {
                     <th scope="col">Nama Santri</th>
                     <th scope="col">Surah</th>
                     <th scope="col">Juz</th>
-                    <th scope="col">Predikat</th>
+                    <th scope="col">Ayat</th>
+                    <th scope="col">Status Setoran</th>
+                    <th scope="col">Nilai</th>
                     <th scope="col">Aksi</th>
                 </tr>
             </thead>
@@ -57,29 +61,33 @@ $escape = static function ($value) {
                         <td class="admin-name"><?= $escape($record['nama_santri'] ?? '-') ?></td>
                         <td><?= $escape($record['surah'] ?? '-') ?></td>
                         <td><?= $escape($record['juz'] ?? '-') ?></td>
+                        <td><?= $escape($record['ayat'] ?? '-') ?></td>
                         <td>
                             <?php
-                            $predikat = strtolower($record['status_setoran'] ?? '');
-                            $badgeColor = match($predikat) {
+                            $statusLabel = $record['status_setoran'] ?? '-';
+                            $statusKey = strtolower($statusLabel);
+                            $badgeColor = match($statusKey) {
                                 'lancar' => 'background:#d1fae5;color:#065f46;',
-                                'kurang lancar' => 'background:#dbeafe;color:#1e40af;',
+                                'kurang lancar' => 'background:#fef3c7;color:#92400e;',
+                                'belum lancar' => 'background:#fee2e2;color:#991b1b;',
                                 default => 'background:#f3f4f6;color:#374151;',
                             };
                             ?>
-                            <span style="padding:3px 10px;border-radius:12px;font-size:12px;font-weight:600;<?= $badgeColor ?>"><?= $escape(ucfirst($record['predikat'] ?? '-')) ?></span>
+                            <span style="padding:3px 10px;border-radius:12px;font-size:12px;font-weight:600;<?= $badgeColor ?>"><?= $escape($statusLabel) ?></span>
                         </td>
+                        <td><?= $escape($record['nilai_kelancaran'] ?? '-') ?></td>
                         <td class="actions">
                             <button type="button" class="btn btn-sm btn-outline-primary btn-edit"
                                     data-bs-toggle="modal"
                                     data-bs-target="#modalHafalan"
                                     data-id="<?= $escape($record['id_hafalan'] ?? '') ?>"
                                     data-tanggal="<?= $escape($record['tanggal'] ?? '') ?>"
-                                    data-santri="<?= $escape($record['nama_santri'] ?? '') ?>"
+                                    data-id-santri="<?= $escape($record['id_santri'] ?? '') ?>"
                                     data-surah="<?= $escape($record['surah'] ?? '') ?>"
                                     data-juz="<?= $escape($record['juz'] ?? '') ?>"
                                     data-ayat="<?= $escape($record['ayat'] ?? '') ?>"
-                                    data-predikat="<?= $escape($record['predikat'] ?? '') ?>"
-                                    data-catatan="<?= $escape($record['catatan'] ?? '') ?>">
+                                    data-status="<?= $escape($record['status_setoran'] ?? '') ?>"
+                                    data-nilai="<?= $escape($record['nilai_kelancaran'] ?? '') ?>">
                                 Edit
                             </button>
                             <a href="<?= BASEURL ?>/Guru/deleteHafalan/<?= $escape($record['id_hafalan'] ?? '') ?>" class="btn btn-sm btn-outline-danger" onclick="return confirm('Hapus data hafalan ini?')">Hapus</a>
@@ -87,7 +95,7 @@ $escape = static function ($value) {
                     </tr>
                 <?php endforeach; ?>
                 <tr id="row-empty" <?= count($records) ? 'hidden' : '' ?>>
-                    <td colspan="7" class="empty"><strong id="empty-title">Belum ada data hafalan</strong><span id="empty-text">Data hafalan akan ditampilkan di sini setelah tersedia.</span></td>
+                    <td colspan="9" class="empty"><strong id="empty-title">Belum ada data hafalan</strong><span id="empty-text">Data hafalan akan ditampilkan di sini setelah tersedia.</span></td>
                 </tr>
             </tbody>
         </table>
@@ -118,8 +126,15 @@ $escape = static function ($value) {
                         <input type="date" class="form-control" id="tanggal" name="tanggal" required value="<?= date('Y-m-d') ?>">
                     </div>
                     <div class="mb-3">
-                        <label for="nama_santri" class="form-label">Nama Santri</label>
-                        <input type="text" class="form-control" id="nama_santri" name="nama_santri" required placeholder="Masukkan nama santri">
+                        <label for="id_santri" class="form-label">Santri</label>
+                        <select class="form-select" id="id_santri" name="id_santri" required>
+                            <option value="">-- Pilih Santri --</option>
+                            <?php foreach ($santriList as $santri): ?>
+                                <option value="<?= $escape($santri['id_santri'] ?? '') ?>">
+                                    <?= $escape($santri['nama_santri'] ?? '') ?> (<?= $escape($santri['nis'] ?? '-') ?> - <?= $escape($santri['kelas'] ?? '-') ?>)
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
                     </div>
                     <div class="mb-3">
                         <label for="surah" class="form-label">Surah</label>
@@ -128,26 +143,27 @@ $escape = static function ($value) {
                     <div class="row mb-3">
                         <div class="col-6">
                             <label for="juz" class="form-label">Juz</label>
-                            <input type="number" class="form-control" id="juz" name="juz" min="1" max="30" placeholder="1–30">
+                            <input type="number" class="form-control" id="juz" name="juz" min="1" max="30" required placeholder="1–30">
                         </div>
                         <div class="col-6">
                             <label for="ayat" class="form-label">Ayat</label>
-                            <input type="text" class="form-control" id="ayat" name="ayat" placeholder="Contoh: 1-20">
+                            <input type="text" class="form-control" id="ayat" name="ayat" required placeholder="Contoh: 1-20">
                         </div>
                     </div>
-                    <div class="mb-3">
-                        <label for="predikat" class="form-label">Predikat</label>
-                        <select class="form-select" id="predikat" name="predikat" required>
-                            <option value="">-- Pilih Predikat --</option>
-                            <option value="Mumtaz">Mumtaz (Sempurna)</option>
-                            <option value="Jayyid Jiddan">Jayyid Jiddan (Sangat Baik)</option>
-                            <option value="Jayyid">Jayyid (Baik)</option>
-                            <option value="Maqbul">Maqbul (Cukup)</option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label for="catatan" class="form-label">Catatan</label>
-                        <textarea class="form-control" id="catatan" name="catatan" rows="2" placeholder="Catatan tambahan (opsional)"></textarea>
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <label for="status_setoran" class="form-label">Status Setoran</label>
+                            <select class="form-select" id="status_setoran" name="status_setoran" required>
+                                <option value="">-- Pilih Status --</option>
+                                <option value="Lancar">Lancar</option>
+                                <option value="Kurang Lancar">Kurang Lancar</option>
+                                <option value="Belum Lancar">Belum Lancar</option>
+                            </select>
+                        </div>
+                        <div class="col-6">
+                            <label for="nilai_kelancaran" class="form-label">Nilai Kelancaran</label>
+                            <input type="number" class="form-control" id="nilai_kelancaran" name="nilai_kelancaran" min="0" max="100" step="0.01" required placeholder="0–100">
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -181,12 +197,12 @@ $escape = static function ($value) {
             submitBtn.textContent = 'Simpan Perubahan';
             document.getElementById('id_hafalan').value = btn.dataset.id;
             document.getElementById('tanggal').value = btn.dataset.tanggal;
-            document.getElementById('nama_santri').value = btn.dataset.santri;
+            document.getElementById('id_santri').value = btn.dataset.idSantri;
             document.getElementById('surah').value = btn.dataset.surah;
             document.getElementById('juz').value = btn.dataset.juz;
             document.getElementById('ayat').value = btn.dataset.ayat;
-            document.getElementById('predikat').value = btn.dataset.predikat;
-            document.getElementById('catatan').value = btn.dataset.catatan;
+            document.getElementById('status_setoran').value = btn.dataset.status;
+            document.getElementById('nilai_kelancaran').value = btn.dataset.nilai;
         });
     });
 

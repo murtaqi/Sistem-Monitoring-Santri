@@ -1,5 +1,6 @@
 <?php
 $records = $data['absensi'] ?? [];
+$santriList = $data['santri'] ?? [];
 $escape = static function ($value) {
     return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
 };
@@ -7,6 +8,7 @@ $escape = static function ($value) {
 <p class="breadcrumb">Kegiatan <span aria-hidden="true">/</span> Absensi Santri</p>
 <h1>Absensi Santri</h1>
 <p class="subtitle">Catatan kehadiran santri harian.</p>
+<?php Flasher::flash(); ?>
 <div class="summary">
     <span class="summary-icon" aria-hidden="true">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
@@ -56,16 +58,17 @@ $escape = static function ($value) {
                         <td class="admin-name"><?= $escape($record['nama_santri'] ?? '-') ?></td>
                         <td>
                             <?php
-                            $status = strtolower($record['status_kehadiran'] ?? '');
+                            $statusLabel = $record['status_kehadiran'] ?? '-';
+                            $status = strtolower($statusLabel);
                             $badgeColor = match($status) {
                                 'hadir' => 'background:#d1fae5;color:#065f46;',
                                 'izin' => 'background:#dbeafe;color:#1e40af;',
                                 'sakit' => 'background:#fef3c7;color:#92400e;',
-                                'alpa' => 'background:#fee2e2;color:#991b1b;',
+                                'alpha' => 'background:#fee2e2;color:#991b1b;',
                                 default => 'background:#f3f4f6;color:#374151;',
                             };
                             ?>
-                            <span style="padding:3px 10px;border-radius:12px;font-size:12px;font-weight:600;<?= $badgeColor ?>"><?= $escape(ucfirst($record['status'] ?? '-')) ?></span>
+                            <span style="padding:3px 10px;border-radius:12px;font-size:12px;font-weight:600;<?= $badgeColor ?>"><?= $escape($statusLabel) ?></span>
                         </td>
                         <td><?= $escape($record['catatan'] ?? '-') ?></td>
                         <td class="actions">
@@ -74,9 +77,9 @@ $escape = static function ($value) {
                                     data-bs-target="#modalAbsensi"
                                     data-id="<?= $escape($record['id_absensi'] ?? '') ?>"
                                     data-tanggal="<?= $escape($record['tanggal'] ?? '') ?>"
-                                    data-santri="<?= $escape($record['nama_santri'] ?? '') ?>"
+                                    data-id-santri="<?= $escape($record['id_santri'] ?? '') ?>"
                                     data-status="<?= $escape($record['status_kehadiran'] ?? '') ?>"
-                                    data-keterangan="<?= $escape($record['catatan'] ?? '') ?>">
+                                    data-catatan="<?= $escape($record['catatan'] ?? '') ?>">
                                 Edit
                             </button>
                             <a href="<?= BASEURL ?>/Guru/deleteAbsensi/<?= $escape($record['id_absensi'] ?? '') ?>" class="btn btn-sm btn-outline-danger" onclick="return confirm('Hapus data absensi ini?')">Hapus</a>
@@ -115,22 +118,29 @@ $escape = static function ($value) {
                         <input type="date" class="form-control" id="tanggal" name="tanggal" required value="<?= date('Y-m-d') ?>">
                     </div>
                     <div class="mb-3">
-                        <label for="nama_santri" class="form-label">Nama Santri</label>
-                        <input type="text" class="form-control" id="nama_santri" name="nama_santri" required placeholder="Masukkan nama santri">
+                        <label for="id_santri" class="form-label">Santri</label>
+                        <select class="form-select" id="id_santri" name="id_santri" required>
+                            <option value="">-- Pilih Santri --</option>
+                            <?php foreach ($santriList as $santri): ?>
+                                <option value="<?= $escape($santri['id_santri'] ?? '') ?>">
+                                    <?= $escape($santri['nama_santri'] ?? '') ?> (<?= $escape($santri['nis'] ?? '-') ?> - <?= $escape($santri['kelas'] ?? '-') ?>)
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
                     </div>
                     <div class="mb-3">
-                        <label for="status" class="form-label">Status Kehadiran</label>
-                        <select class="form-select" id="status" name="status" required>
+                        <label for="status_kehadiran" class="form-label">Status Kehadiran</label>
+                        <select class="form-select" id="status_kehadiran" name="status_kehadiran" required>
                             <option value="">-- Pilih Status --</option>
                             <option value="Hadir">Hadir</option>
                             <option value="Izin">Izin</option>
                             <option value="Sakit">Sakit</option>
-                            <option value="Alpa">Alpa</option>
+                            <option value="Alpha">Alpha</option>
                         </select>
                     </div>
                     <div class="mb-3">
-                        <label for="keterangan" class="form-label">Keterangan</label>
-                        <textarea class="form-control" id="keterangan" name="keterangan" rows="2" placeholder="Keterangan tambahan (opsional)"></textarea>
+                        <label for="catatan" class="form-label">Catatan</label>
+                        <textarea class="form-control" id="catatan" name="catatan" rows="2" placeholder="Catatan tambahan (opsional)"></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -164,9 +174,9 @@ $escape = static function ($value) {
             submitBtn.textContent = 'Simpan Perubahan';
             document.getElementById('id_absensi').value = btn.dataset.id;
             document.getElementById('tanggal').value = btn.dataset.tanggal;
-            document.getElementById('nama_santri').value = btn.dataset.santri;
-            document.getElementById('status').value = btn.dataset.status;
-            document.getElementById('keterangan').value = btn.dataset.keterangan;
+            document.getElementById('id_santri').value = btn.dataset.idSantri;
+            document.getElementById('status_kehadiran').value = btn.dataset.status;
+            document.getElementById('catatan').value = btn.dataset.catatan;
         });
     });
 

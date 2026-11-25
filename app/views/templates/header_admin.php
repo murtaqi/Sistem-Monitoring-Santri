@@ -10,7 +10,7 @@ $currentPage = $data['judul'] ?? '';
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= htmlspecialchars($data['judul'] ?? 'Admin', ENT_QUOTES, 'UTF-8') ?> | Monitoring Santri</title>
     <link rel="stylesheet" href="<?= BASEURL ?>/css/bootstrap.css">
-    <link rel="stylesheet" href="<?= BASEURL ?>/css/style.css">
+    <link rel="stylesheet" href="<?= BASEURL ?>/css/style.css?v=<?= @filemtime(__DIR__ . '/../../../public/css/style.css') ?: '2' ?>">
 </head>
 <body>
     <div class="layout">
@@ -23,6 +23,10 @@ $currentPage = $data['judul'] ?? '';
                 <a class="nav-item" href="<?= BASEURL ?>/Admin"<?= $currentPage === 'Dashboard Admin' ? ' aria-current="page"' : '' ?>>
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
                     Dashboard
+                </a>
+                <a class="nav-item" href="<?= BASEURL ?>/Admin/laporan"<?= $currentPage === 'Dashboard Sistem Informasi' ? ' aria-current="page"' : '' ?>>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 3 5-7"/></svg>
+                    Dashboard Sistem Informasi
                 </a>
             </nav>
             <p class="nav-label">MASTER DATA</p>

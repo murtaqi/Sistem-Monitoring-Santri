@@ -46,9 +46,27 @@
         public function santri() {
             $data['judul'] = 'Data Santri';
             $data['records'] = $this->model('Santri_model')->getAll();
+            $data['ortu'] = $this->model('Users_model')->getAllOrtu();
 
             $this->view('templates/header_admin', $data);
             $this->view('admin/santri', $data);
+            $this->view('templates/footer');
+        }
+
+        public function laporan() {
+            $data['judul'] = 'Dashboard Sistem Informasi';
+            $dashboard = $this->model('Dashboard_model');
+            $data['totalSantri'] = $dashboard->totalSantri();
+            $data['totalPelanggaran'] = $dashboard->totalPelanggaran();
+            $data['pelanggaranBelumSelesai'] = $dashboard->pelanggaranBelumSelesai();
+            $data['absensiPerStatus'] = $dashboard->absensiPerStatus();
+            $data['pelanggaranPerStatus'] = $dashboard->pelanggaranPerStatus();
+            $data['totalHafalan'] = $dashboard->totalHafalan();
+            $data['hafalanPerStatus'] = $dashboard->hafalanPerStatus();
+            $data['absensiTerbaru'] = $dashboard->absensiTerbaru(10);
+
+            $this->view('templates/header_admin', $data);
+            $this->view('admin/laporan', $data);
             $this->view('templates/footer');
         }
 
@@ -73,6 +91,57 @@
             }else{
                 Flasher::setFlash('User Gagal Ditambahkan', 'danger');
                 header('Location: '.BASEURL.'/Admin');
+                exit;
+            }
+        }
+
+        public function tambahSantri(){
+            if($_SERVER['REQUEST_METHOD'] !== 'POST'){
+                header('Location: '.BASEURL.'/Admin/santri');
+                exit;
+            }
+
+            $santriModel = $this->model('Santri_model');
+            $nis = trim((string) ($_POST['nis'] ?? ''));
+            $namaSantri = trim((string) ($_POST['nama_santri'] ?? ''));
+            $kelas = trim((string) ($_POST['kelas'] ?? ''));
+            $idOrtu = (int) ($_POST['id_ortu'] ?? 0);
+
+            if($nis === '' || $namaSantri === '' || $kelas === '' || $idOrtu <= 0){
+                Flasher::setFlash('Data santri tidak lengkap', 'danger');
+                header('Location: '.BASEURL.'/Admin/santri');
+                exit;
+            }
+
+            if($santriModel->getSantriByNis($nis)){
+                Flasher::setFlash('NIS Sudah Terdaftar', 'danger');
+                header('Location: '.BASEURL.'/Admin/santri');
+                exit;
+            }
+
+            if(!$santriModel->ortuExists($idOrtu)){
+                Flasher::setFlash('Orang tua tidak valid', 'danger');
+                header('Location: '.BASEURL.'/Admin/santri');
+                exit;
+            }
+
+            $idAdmin = $santriModel->getAdminIdByName($_SESSION['user'] ?? '');
+            if(!$idAdmin){
+                Flasher::setFlash('Admin tidak ditemukan', 'danger');
+                header('Location: '.BASEURL.'/Admin/santri');
+                exit;
+            }
+
+            $_POST['id_admin'] = $idAdmin;
+            $_POST['id_ortu'] = $idOrtu;
+
+            if($santriModel->addSantri($_POST) > 0){
+                Flasher::setFlash('Santri Berhasil Ditambahkan', 'success');
+                header('Location: '.BASEURL.'/Admin/santri');
+                exit;
+            }else{
+                Flasher::setFlash('Santri Gagal Ditambahkan', 'danger');
+                header('Location: '.BASEURL.'/Admin/santri');
                 exit;
             }
         }

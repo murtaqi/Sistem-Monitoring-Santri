@@ -7,7 +7,7 @@ $currentUser = $_SESSION['user'] ?? [];
 $userName = htmlspecialchars($currentUser['nama_lengkap'] ?? 'Pengguna');
 ?>
 <p class="breadcrumb">Dashboard</p>
-<h1>Selamat Datang, <?= $userName ?> 👋</h1>
+<h1>Selamat Datang, <?= $userName ?></h1>
 <p class="subtitle">Ringkasan data sistem monitoring santri.</p>
 
 <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); gap:20px; margin-bottom:32px;">
@@ -42,10 +42,10 @@ $userName = htmlspecialchars($currentUser['nama_lengkap'] ?? 'Pengguna');
         <h2 id="quickaction-title">Pintasan Cepat</h2>
     </div>
     <div style="padding:24px; display:flex; flex-wrap:wrap; gap:12px;">
-        <a href="<?= BASEURL ?>/Admin/admin" class="btn btn-outline-success btn-sm" style="padding:10px 20px; border-radius:8px; text-decoration:none; font-weight:600;">📋 Kelola Admin</a>
-        <a href="<?= BASEURL ?>/Admin/guru" class="btn btn-outline-success btn-sm" style="padding:10px 20px; border-radius:8px; text-decoration:none; font-weight:600;">👨‍🏫 Kelola Guru</a>
-        <a href="<?= BASEURL ?>/Admin/ortu" class="btn btn-outline-success btn-sm" style="padding:10px 20px; border-radius:8px; text-decoration:none; font-weight:600;">👪 Kelola Orang Tua</a>
-        <a href="<?= BASEURL ?>/Admin/santri" class="btn btn-outline-success btn-sm" style="padding:10px 20px; border-radius:8px; text-decoration:none; font-weight:600;">🎓 Kelola Santri</a>
+        <a href="<?= BASEURL ?>/Admin/admin" class="btn btn-outline-success btn-sm" style="padding:10px 20px; border-radius:8px; text-decoration:none; font-weight:600;">Kelola Admin</a>
+        <a href="<?= BASEURL ?>/Admin/guru" class="btn btn-outline-success btn-sm" style="padding:10px 20px; border-radius:8px; text-decoration:none; font-weight:600;">Kelola Guru</a>
+        <a href="<?= BASEURL ?>/Admin/ortu" class="btn btn-outline-success btn-sm" style="padding:10px 20px; border-radius:8px; text-decoration:none; font-weight:600;">Kelola Orang Tua</a>
+        <a href="<?= BASEURL ?>/Admin/santri" class="btn btn-outline-success btn-sm" style="padding:10px 20px; border-radius:8px; text-decoration:none; font-weight:600;">Kelola Santri</a>
     </div>
 </section>
 

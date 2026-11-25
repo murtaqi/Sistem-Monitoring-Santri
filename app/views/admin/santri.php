@@ -1,5 +1,6 @@
 <?php
 $records = $data['records'] ?? [];
+$ortuList = $data['ortu'] ?? [];
 $escape = static function ($value) {
     return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
 };
@@ -7,6 +8,7 @@ $escape = static function ($value) {
 <p class="breadcrumb">Administrasi <span aria-hidden="true">/</span> Data Santri</p>
 <h1>Data Santri</h1>
 <p class="subtitle">Daftar data santri pada sistem monitoring santri.</p>
+<?php Flasher::flash(); ?>
 <div class="summary">
     <span class="summary-icon" aria-hidden="true">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
@@ -116,6 +118,17 @@ $escape = static function ($value) {
                     <div class="mb-3">
                         <label for="target_juz" class="form-label">Target Juz</label>
                         <input type="number" class="form-control" id="target_juz" name="target_juz" min="1" max="30" placeholder="1 - 30">
+                    </div>
+                    <div class="mb-3">
+                        <label for="id_ortu" class="form-label">Orang Tua / Wali</label>
+                        <select class="form-select" id="id_ortu" name="id_ortu" required>
+                            <option value="">-- Pilih Orang Tua --</option>
+                            <?php foreach ($ortuList as $ortu): ?>
+                                <option value="<?= $escape($ortu['id_user'] ?? '') ?>">
+                                    <?= $escape($ortu['nama_lengkap'] ?? '') ?> (<?= $escape($ortu['username'] ?? '') ?>)
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
                     </div>
                     <div class="mb-3">
                         <label for="kontak" class="form-label">Kontak Orang Tua</label>

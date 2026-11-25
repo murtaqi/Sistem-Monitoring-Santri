@@ -4,7 +4,7 @@ $currentUser = $_SESSION['user'] ?? [];
 $userName = htmlspecialchars($currentUser['nama_lengkap'] ?? 'Pengguna');
 ?>
 <p class="breadcrumb">Dashboard</p>
-<h1>Selamat Datang, <?= $userName ?> 👋</h1>
+<h1>Selamat Datang, <?= $userName ?></h1>
 <p class="subtitle">Panel guru — kelola absensi, hafalan, dan pelanggaran santri.</p>
 
 <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); gap:20px; margin-bottom:32px;">
@@ -33,8 +33,8 @@ $userName = htmlspecialchars($currentUser['nama_lengkap'] ?? 'Pengguna');
         <h2 id="quickaction-title">Pintasan Cepat</h2>
     </div>
     <div style="padding:24px; display:flex; flex-wrap:wrap; gap:12px;">
-        <a href="<?= BASEURL ?>/Guru/absensi" class="btn btn-outline-success btn-sm" style="padding:10px 20px; border-radius:8px; text-decoration:none; font-weight:600;">✅ Catat Absensi</a>
-        <a href="<?= BASEURL ?>/Guru/hafalan" class="btn btn-outline-success btn-sm" style="padding:10px 20px; border-radius:8px; text-decoration:none; font-weight:600;">📖 Input Hafalan</a>
-        <a href="<?= BASEURL ?>/Guru/pelanggaran" class="btn btn-outline-success btn-sm" style="padding:10px 20px; border-radius:8px; text-decoration:none; font-weight:600;">⚠️ Catat Pelanggaran</a>
+        <a href="<?= BASEURL ?>/Guru/absensi" class="btn btn-outline-success btn-sm" style="padding:10px 20px; border-radius:8px; text-decoration:none; font-weight:600;">Catat Absensi</a>
+        <a href="<?= BASEURL ?>/Guru/hafalan" class="btn btn-outline-success btn-sm" style="padding:10px 20px; border-radius:8px; text-decoration:none; font-weight:600;">Input Hafalan</a>
+        <a href="<?= BASEURL ?>/Guru/pelanggaran" class="btn btn-outline-success btn-sm" style="padding:10px 20px; border-radius:8px; text-decoration:none; font-weight:600;">Catat Pelanggaran</a>
     </div>
 </section>

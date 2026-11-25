@@ -9,7 +9,7 @@
 </head>
 <body class="login-page">
     <main class="login-card">
-        <div class="login-brand-mark" aria-hidden="true">MS</div>
+
         <p class="login-eyebrow">SISTEM MONITORING SANTRI</p>
         <h1>Selamat datang</h1>
         <p class="login-description">Masuk menggunakan akun admin</p>
