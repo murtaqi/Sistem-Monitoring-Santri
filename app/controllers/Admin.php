@@ -71,6 +71,108 @@
             $this->view('templates/footer');
         }
 
+        public function laporanAbsensi() {
+            $tglAwal = trim((string) ($_GET['tgl_awal'] ?? ''));
+            $tglAkhir = trim((string) ($_GET['tgl_akhir'] ?? ''));
+            $idGuru = isset($_GET['id_guru']) && $_GET['id_guru'] !== '' ? (int) $_GET['id_guru'] : null;
+
+            $laporanModel = $this->model('Laporan_model');
+            $records = [];
+            $rekap = ['Hadir' => 0, 'Izin' => 0, 'Sakit' => 0, 'Alpha' => 0];
+
+            if ($tglAwal !== '' && $tglAkhir !== '') {
+                $records = $laporanModel->getLaporanAbsensi($tglAwal, $tglAkhir, $idGuru);
+                foreach ($records as $row) {
+                    $status = $row['status_kehadiran'] ?? '';
+                    if (isset($rekap[$status])) {
+                        $rekap[$status]++;
+                    }
+                }
+            }
+
+            if (isset($_GET['export']) && $_GET['export'] === 'csv') {
+                header('Content-Type: text/csv; charset=utf-8');
+                header('Content-Disposition: attachment; filename=laporan_absensi.csv');
+                $out = fopen('php://output', 'w');
+                fputcsv($out, ['Tanggal', 'NIS', 'Nama Santri', 'Kelas', 'Guru Pencatat', 'Status Kehadiran', 'Catatan']);
+                foreach ($records as $row) {
+                    fputcsv($out, [
+                        $row['tanggal'] ?? '',
+                        $row['nis'] ?? '',
+                        $row['nama_santri'] ?? '',
+                        $row['kelas'] ?? '',
+                        $row['nama_guru'] ?? '',
+                        $row['status_kehadiran'] ?? '',
+                        $row['catatan'] ?? '-',
+                    ]);
+                }
+                fclose($out);
+                exit;
+            }
+
+            $data['judul'] = 'Laporan Absensi Santri';
+            $data['guru'] = $this->model('Users_model')->getAllGuru();
+            $data['tgl_awal'] = $tglAwal;
+            $data['tgl_akhir'] = $tglAkhir;
+            $data['id_guru'] = $idGuru;
+            $data['records'] = $records;
+            $data['rekap'] = $rekap;
+            $data['grand_total'] = count($records);
+
+            $this->view('templates/header_admin', $data);
+            $this->view('admin/laporan_absensi', $data);
+            $this->view('templates/footer');
+        }
+
+        public function laporanSantri() {
+            $kelas = trim((string) ($_GET['kelas'] ?? ''));
+            $laporanModel = $this->model('Laporan_model');
+            $records = $laporanModel->getLaporanKondisiSantri($kelas);
+
+            $totalSantri = count($records);
+            $totalHafalan = 0;
+            $totalPelanggaranBelumSelesai = 0;
+            foreach ($records as $row) {
+                $totalHafalan += (int) ($row['total_hafalan'] ?? 0);
+                $totalPelanggaranBelumSelesai += (int) ($row['pelanggaran_belum_selesai'] ?? 0);
+            }
+
+            if (isset($_GET['export']) && $_GET['export'] === 'csv') {
+                header('Content-Type: text/csv; charset=utf-8');
+                header('Content-Disposition: attachment; filename=laporan_kondisi_santri.csv');
+                $out = fopen('php://output', 'w');
+                fputcsv($out, ['NIS', 'Nama Santri', 'Kelas', 'Target Juz', 'Total Hafalan', 'Rata-rata Nilai', 'Total Pelanggaran', 'Pelanggaran Belum Selesai', 'Status']);
+                foreach ($records as $row) {
+                    $belumSelesai = (int) ($row['pelanggaran_belum_selesai'] ?? 0);
+                    fputcsv($out, [
+                        $row['nis'] ?? '',
+                        $row['nama_santri'] ?? '',
+                        $row['kelas'] ?? '',
+                        $row['target_juz'] ?? 0,
+                        $row['total_hafalan'] ?? 0,
+                        $row['rata_nilai'] ?? 0,
+                        $row['total_pelanggaran'] ?? 0,
+                        $belumSelesai,
+                        $belumSelesai > 0 ? 'Perlu Perhatian' : 'Baik',
+                    ]);
+                }
+                fclose($out);
+                exit;
+            }
+
+            $data['judul'] = 'Laporan Kondisi Santri';
+            $data['daftar_kelas'] = $laporanModel->getDaftarKelas();
+            $data['kelas'] = $kelas;
+            $data['records'] = $records;
+            $data['total_santri'] = $totalSantri;
+            $data['total_hafalan'] = $totalHafalan;
+            $data['total_pelanggaran_belum_selesai'] = $totalPelanggaranBelumSelesai;
+
+            $this->view('templates/header_admin', $data);
+            $this->view('admin/laporan_santri', $data);
+            $this->view('templates/footer');
+        }
+
         public function tambahUser(){
             $username = $this->model('Users_model')->getUserByUsername($_POST['username']);
             if($username){

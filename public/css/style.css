@@ -689,3 +689,27 @@
                 grid-template-columns: repeat(2, minmax(0, 1fr));
             }
         }
+
+        @media print {
+            .sidebar,
+            .topbar,
+            .footer,
+            .no-print {
+                display: none !important;
+            }
+
+            .layout,
+            .workspace,
+            main {
+                display: block !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                width: 100% !important;
+                max-width: 100% !important;
+            }
+
+            .card {
+                box-shadow: none !important;
+                border: 1px solid #d5dcd8 !important;
+            }
+        }
