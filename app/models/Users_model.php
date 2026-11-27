@@ -49,10 +49,17 @@
         }
 
         public function updateUser($data){
-            $this->db->query('UPDATE '.$this->table.' SET username=:username, password=:password WHERE id_user=:id');
-            $this->db->bind(':username',       $data['username']);
-            $this->db->bind(':password',       $data['password']);
-            $this->db->bind(':id',             $data['id_user']);
+            if (!empty($data['password'])) {
+                $this->db->query('UPDATE ' . $this->table . ' SET nama_lengkap=:nama_lengkap, username=:username, password=:password, role=:role WHERE id_user=:id');
+                $this->db->bind(':password', $data['password']);
+            } else {
+                $this->db->query('UPDATE ' . $this->table . ' SET nama_lengkap=:nama_lengkap, username=:username, role=:role WHERE id_user=:id');
+            }
+
+            $this->db->bind(':nama_lengkap', $data['nama_lengkap']);
+            $this->db->bind(':username',     $data['username']);
+            $this->db->bind(':role',         $data['role']);     
+            $this->db->bind(':id',           $data['id_user']);
             $this->db->execute();
             return $this->db->rowCount();
         }

@@ -115,4 +115,17 @@
             }
             return $this->db->resultSet();
         }
+
+        public function absensiPerBulan($idGuru = null){
+            $sql = 'SELECT MONTH(tanggal) AS bulan, COUNT(*) AS jumlah FROM absensi WHERE YEAR(tanggal) = YEAR(CURDATE())';
+            if ($idGuru !== null) {
+                $sql .= ' AND id_guru = :id_guru';
+            }
+            $sql .= ' GROUP BY MONTH(tanggal) ORDER BY bulan ASC';
+            $this->db->query($sql);
+            if ($idGuru !== null) {
+                $this->db->bind(':id_guru', (int)$idGuru);
+            }
+            return $this->db->resultSet();
+        }
     }

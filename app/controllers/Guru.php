@@ -26,6 +26,7 @@
             $data['pelanggaranPerStatus'] = $dashboard->pelanggaranPerStatus($idGuru);
             $data['totalHafalan'] = $dashboard->totalHafalan($idGuru);
             $data['hafalanPerStatus'] = $dashboard->hafalanPerStatus($idGuru);
+            $data['absensiPerBulan'] = $dashboard->absensiPerBulan($idGuru);
             $data['absensiTerbaru'] = $dashboard->absensiTerbaru(10, $idGuru);
 
             $this->view('templates/header_guru', $data);

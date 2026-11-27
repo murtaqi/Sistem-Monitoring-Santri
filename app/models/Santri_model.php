@@ -61,4 +61,27 @@
             $this->db->execute();
             return $this->db->rowCount();
         }
+
+        public function updateSantri($data){
+            $targetJuz = isset($data['target_juz']) && $data['target_juz'] !== '' ? (int) $data['target_juz'] : 0;
+            $kontak = isset($data['kontak']) && trim((string) $data['kontak']) !== '' ? trim((string) $data['kontak']) : null;
+
+            $this->db->query('UPDATE ' . $this->table . ' SET id_ortu = :id_ortu, nis = :nis, nama_santri = :nama_santri, kelas = :kelas, target_juz = :target_juz, kontak = :kontak WHERE id_santri = :id_santri');
+            $this->db->bind(':id_santri', (int) $data['id_santri']);
+            $this->db->bind(':id_ortu', (int) $data['id_ortu']);
+            $this->db->bind(':nis', trim((string) $data['nis']));
+            $this->db->bind(':nama_santri', trim((string) $data['nama_santri']));
+            $this->db->bind(':kelas', trim((string) $data['kelas']));
+            $this->db->bind(':target_juz', $targetJuz);
+            $this->db->bind(':kontak', $kontak);
+            $this->db->execute();
+            return $this->db->rowCount();
+        }
+
+        public function deleteSantri($id){
+            $this->db->query('DELETE FROM ' . $this->table . ' WHERE id_santri = :id');
+            $this->db->bind(':id', (int) $id);
+            $this->db->execute();
+            return $this->db->rowCount();
+        }
     }

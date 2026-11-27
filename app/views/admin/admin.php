@@ -136,7 +136,7 @@ $escape = static function ($value) {
 
     document.querySelectorAll('.btn-edit').forEach(btn => {
         btn.addEventListener('click', () => {
-            form.action = BASEURL + '/Admin/updateUser';
+            form.action = BASEURL + '/Admin/editUser';
             title.textContent = 'Edit Admin';
             submitBtn.textContent = 'Simpan Perubahan';
             document.getElementById('id_user').value = btn.dataset.id;

@@ -69,10 +69,11 @@ $escape = static function ($value) {
                                     data-nama="<?= $escape($record['nama_santri'] ?? '') ?>"
                                     data-kelas="<?= $escape($record['kelas'] ?? '') ?>"
                                     data-juz="<?= $escape($record['target_juz'] ?? '') ?>"
+                                    data-ortu="<?= $escape($record['id_ortu'] ?? '') ?>"
                                     data-kontak="<?= $escape($record['kontak'] ?? '') ?>">
                                 Edit
                             </button>
-                            <a href="<?= BASEURL ?>/Admin/deleteSantri/<?= $escape($record['id_santri'] ?? '') ?>" class="btn btn-sm btn-outline-danger" onclick="return confirm('Apakah Anda yakin ingin menghapus santri ini?')">Hapus</a>
+                            <a href="<?= BASEURL ?>/Santri/hapusSantri/<?= $escape($record['id_santri'] ?? '') ?>" class="btn btn-sm btn-outline-danger" onclick="return confirm('Apakah Anda yakin ingin menghapus santri ini?')">Hapus</a>
                         </td>
                     </tr>
                 <?php endforeach; ?>
@@ -100,7 +101,7 @@ $escape = static function ($value) {
                 <h5 class="modal-title" id="modalSantriLabel">Tambah Santri</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Tutup"></button>
             </div>
-            <form action="<?= BASEURL ?>/Admin/tambahSantri" method="post" id="formSantri">
+            <form action="<?= BASEURL ?>/Santri/tambahSantri" method="post" id="formSantri">
                 <div class="modal-body">
                     <input type="hidden" id="id_santri" name="id_santri">
                     <div class="mb-3">
@@ -151,7 +152,7 @@ $escape = static function ($value) {
     const submitBtn = document.getElementById('btnSubmit');
 
     document.getElementById('btnTambahSantri').addEventListener('click', () => {
-        form.action = BASEURL + '/Admin/tambahSantri';
+        form.action = BASEURL + '/Santri/tambahSantri';
         title.textContent = 'Tambah Santri';
         submitBtn.textContent = 'Tambah Data';
         form.reset();
@@ -160,7 +161,7 @@ $escape = static function ($value) {
 
     document.querySelectorAll('.btn-edit').forEach(btn => {
         btn.addEventListener('click', () => {
-            form.action = BASEURL + '/Admin/updateSantri';
+            form.action = BASEURL + '/Santri/editSantri';
             title.textContent = 'Edit Santri';
             submitBtn.textContent = 'Simpan Perubahan';
             document.getElementById('id_santri').value = btn.dataset.id;
@@ -168,6 +169,7 @@ $escape = static function ($value) {
             document.getElementById('nama_santri').value = btn.dataset.nama;
             document.getElementById('kelas').value = btn.dataset.kelas;
             document.getElementById('target_juz').value = btn.dataset.juz;
+            document.getElementById('id_ortu').value = btn.dataset.ortu || '';
             document.getElementById('kontak').value = btn.dataset.kontak;
         });
     });

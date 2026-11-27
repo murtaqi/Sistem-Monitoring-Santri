@@ -24,12 +24,27 @@ foreach ($urutanStatus as $status) {
     $dataPersen[]    = $totalAbsensi > 0 ? round($jumlah / $totalAbsensi * 100, 1) : 0;
 }
 
+$urutanPelanggaran = ['Belum Selesai', 'Selesai'];
+$pelanggaranCount  = [];
+foreach ($data['pelanggaranPerStatus'] ?? [] as $row) {
+    $pelanggaranCount[$row['status_sanksi']] = (int)$row['jumlah'];
+}
 $labelsPelanggaran = [];
 $dataPelanggaran   = [];
-foreach ($data['pelanggaranPerStatus'] as $row) {
-    $labelsPelanggaran[] = $row['status_sanksi'];
-    $dataPelanggaran[]   = (int)$row['jumlah'];
+foreach ($urutanPelanggaran as $status) {
+    $labelsPelanggaran[] = $status;
+    $dataPelanggaran[]   = $pelanggaranCount[$status] ?? 0;
 }
+
+$dataBulanan = array_fill(1, 12, 0);
+foreach ($data['absensiPerBulan'] ?? [] as $row) {
+    $bulan = (int)($row['bulan'] ?? 0);
+    if ($bulan >= 1 && $bulan <= 12) {
+        $dataBulanan[$bulan] = (int)$row['jumlah'];
+    }
+}
+$namaBulan = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+$totalBulanIni = $dataBulanan[(int)date('n')] ?? 0;
 
 $urutanHafalan = ['Lancar', 'Kurang Lancar', 'Belum Lancar'];
 $hafalanCount  = [];
@@ -111,6 +126,16 @@ foreach ($urutanHafalan as $status) {
             <canvas id="chartHafalan" role="img" aria-label="Grafik lingkaran hafalan santri menurut status setoran"></canvas>
         </div>
     </section>
+
+    <section class="card" aria-labelledby="chart-bulanan-title" style="grid-column: 1 / -1;">
+        <div class="card-heading">
+            <h2 id="chart-bulanan-title">Tren Absensi per Bulan (<?= date('Y') ?>)</h2>
+            <span class="badge">Bulan ini: <?= $totalBulanIni ?> catatan</span>
+        </div>
+        <div class="chart-body">
+            <canvas id="chartTrenBulanan" role="img" aria-label="Grafik garis jumlah absensi per bulan pada tahun berjalan"></canvas>
+        </div>
+    </section>
 </div>
 
 <section class="card" aria-labelledby="table-absensi-title">
@@ -175,6 +200,8 @@ foreach ($urutanHafalan as $status) {
     const pelanggaranData   = <?= json_encode($dataPelanggaran) ?>;
     const hafalanLabels     = <?= json_encode($labelsHafalan) ?>;
     const hafalanData       = <?= json_encode($dataHafalan) ?>;
+    const bulanLabels       = <?= json_encode($namaBulan) ?>;
+    const bulanData         = <?= json_encode(array_values($dataBulanan)) ?>;
 
     const warnaStatus = { 'Hadir': '#16745c', 'Izin': '#e0a800', 'Sakit': '#e07b39', 'Alpha': '#d1453b' };
     const warnaPelanggaran = { 'Belum Selesai': '#d1453b', 'Selesai': '#16745c' };
@@ -278,6 +305,35 @@ foreach ($urutanHafalan as $status) {
             plugins: {
                 legend: legendaBawah,
                 tooltip: { callbacks: { label: ctx => ctx.label + ': ' + ctx.parsed + ' setoran' } }
+            }
+        }
+    });
+
+    new Chart(document.getElementById('chartTrenBulanan'), {
+        type: 'line',
+        data: {
+            labels: bulanLabels,
+            datasets: [{
+                label: 'Jumlah Catatan Absensi',
+                data: bulanData,
+                borderColor: '#16745c',
+                backgroundColor: 'rgba(22, 116, 92, 0.12)',
+                fill: true,
+                tension: 0.3,
+                pointRadius: 4,
+                pointBackgroundColor: '#16745c'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: legendaBawah,
+                tooltip: { callbacks: { label: ctx => ctx.parsed.y + ' catatan' } }
+            },
+            scales: {
+                y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: garis } },
+                x: { grid: { display: false } }
             }
         }
     });

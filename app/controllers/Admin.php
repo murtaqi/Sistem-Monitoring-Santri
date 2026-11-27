@@ -63,6 +63,7 @@
             $data['pelanggaranPerStatus'] = $dashboard->pelanggaranPerStatus();
             $data['totalHafalan'] = $dashboard->totalHafalan();
             $data['hafalanPerStatus'] = $dashboard->hafalanPerStatus();
+            $data['absensiPerBulan'] = $dashboard->absensiPerBulan();
             $data['absensiTerbaru'] = $dashboard->absensiTerbaru(10);
 
             $this->view('templates/header_admin', $data);
@@ -95,53 +96,53 @@
             }
         }
 
-        public function tambahSantri(){
-            if($_SERVER['REQUEST_METHOD'] !== 'POST'){
-                header('Location: '.BASEURL.'/Admin/santri');
-                exit;
+        public function editUser(){
+            $role = $_POST['role'];
+            $redirect = match ($role){
+                'admin' => BASEURL.'/Admin/admin',
+                'guru' => BASEURL.'/Admin/guru',
+                'ortu' => BASEURL.'/Admin/ortu',
+                default => BASEURL.'/Admin',     
+            };
+
+            if(!empty($_POST['password'])){
+                if($_POST['password'] !== $_POST['confirm']){
+                    Flasher::setFlash('Konfirmasi Password Tidak Cocok', 'danger');
+                    header('Location: '.$redirect);
+                    exit;
+                }
+                $_POST['password'] = password_hash($_POST['password'], PASSWORD_DEFAULT);
+            }else{
+                $_POST['password'] = null;
             }
 
-            $santriModel = $this->model('Santri_model');
-            $nis = trim((string) ($_POST['nis'] ?? ''));
-            $namaSantri = trim((string) ($_POST['nama_santri'] ?? ''));
-            $kelas = trim((string) ($_POST['kelas'] ?? ''));
-            $idOrtu = (int) ($_POST['id_ortu'] ?? 0);
-
-            if($nis === '' || $namaSantri === '' || $kelas === '' || $idOrtu <= 0){
-                Flasher::setFlash('Data santri tidak lengkap', 'danger');
-                header('Location: '.BASEURL.'/Admin/santri');
-                exit;
-            }
-
-            if($santriModel->getSantriByNis($nis)){
-                Flasher::setFlash('NIS Sudah Terdaftar', 'danger');
-                header('Location: '.BASEURL.'/Admin/santri');
-                exit;
-            }
-
-            if(!$santriModel->ortuExists($idOrtu)){
-                Flasher::setFlash('Orang tua tidak valid', 'danger');
-                header('Location: '.BASEURL.'/Admin/santri');
-                exit;
-            }
-
-            $idAdmin = $santriModel->getAdminIdByName($_SESSION['user'] ?? '');
-            if(!$idAdmin){
-                Flasher::setFlash('Admin tidak ditemukan', 'danger');
-                header('Location: '.BASEURL.'/Admin/santri');
-                exit;
-            }
-
-            $_POST['id_admin'] = $idAdmin;
-            $_POST['id_ortu'] = $idOrtu;
-
-            if($santriModel->addSantri($_POST) > 0){
-                Flasher::setFlash('Santri Berhasil Ditambahkan', 'success');
-                header('Location: '.BASEURL.'/Admin/santri');
+            if($this->model('Users_model')->updateUser($_POST) > 0){
+                Flasher::setFlash('User Berhasil diupdate', 'success');
+                header('Location: '.$redirect);
                 exit;
             }else{
-                Flasher::setFlash('Santri Gagal Ditambahkan', 'danger');
-                header('Location: '.BASEURL.'/Admin/santri');
+                Flasher::setFlash('User Gagal diupdate', 'danger');
+                header('Location: '.$redirect);
+                exit;
+            }
+        }
+
+        public function hapusUser($id){
+            $role = $_POST['role'];
+            $redirect = match ($role){
+                'admin' => BASEURL.'/Admin/admin',
+                'guru' => BASEURL.'/Admin/guru',
+                'ortu' => BASEURL.'/Admin/ortu',
+                default => BASEURL.'/Admin',     
+            };
+
+            if($this->model('Users_model')->deleteUser($id) > 0){
+                Flasher::setFlash('User Berhasil dihapus', 'success');
+                header('Location: '.$redirect);
+                exit;
+            }else{
+                Flasher::setFlash('User Gagal dihapus', 'danger');
+                header('Location: '.$redirect);
                 exit;
             }
         }
