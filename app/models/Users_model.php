@@ -25,7 +25,7 @@
 
         public function getUserByUsername($username){
             $this->db->query('SELECT * FROM '.$this->table.' WHERE username=:username');
-            $this->db->bind('username', $username);
+            $this->db->bind(':username', $username);
             return $this->db->single();
         }
 
@@ -43,7 +43,7 @@
 
         public function deleteUser($id){
             $this->db->query('DELETE FROM '.$this->table.' WHERE id_user=:id');
-            $this->db->bind('id', $id);
+            $this->db->bind(':id', $id);
             $this->db->execute();
             return $this->db->rowCount();
         }

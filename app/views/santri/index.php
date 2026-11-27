@@ -70,41 +70,17 @@ $escape = static function ($value) {
 </section>
 <noscript><p>Pencarian dan perpindahan halaman membutuhkan JavaScript. Sepuluh data pertama ditampilkan.</p></noscript>
 
-    <script>
-        (() => {
-            const search = document.getElementById('santri-search');
-            if (!search) return;
-            const limit = document.getElementById('santri-limit');
-            const rows = Array.from(document.querySelectorAll('[data-santri-row]'));
-            const records = rows.map(row => ({ row, text: Array.from(row.cells).slice(1).map(cell => cell.textContent).join(' ').toLocaleLowerCase('id') }));
-            const previous = document.getElementById('santri-prev');
-            const next = document.getElementById('santri-next');
-            let page = 1;
-            const render = () => {
-                const keyword = search.value.trim().toLocaleLowerCase('id');
-                const matches = records.filter(record => record.text.includes(keyword));
-                const size = Number(limit.value);
-                const pages = Math.max(1, Math.ceil(matches.length / size));
-                page = Math.min(page, pages);
-                const start = (page - 1) * size;
-                rows.forEach(row => { row.hidden = true; });
-                matches.slice(start, start + size).forEach((record, index) => {
-                    record.row.hidden = false;
-                    record.row.cells[0].textContent = start + index + 1;
-                });
-                document.getElementById('santri-empty').hidden = matches.length > 0;
-                document.getElementById('santri-empty-title').textContent = rows.length ? 'Data santri tidak ditemukan' : 'Belum ada data santri';
-                document.getElementById('santri-empty-text').textContent = rows.length ? 'Coba gunakan kata kunci yang lain.' : 'Data santri akan ditampilkan di sini setelah tersedia.';
-                document.getElementById('santri-summary').textContent = `Menampilkan ${matches.length ? start + 1 : 0}–${Math.min(start + size, matches.length)} dari ${matches.length} santri${keyword ? ` (total ${rows.length} data)` : ''}`;
-                document.getElementById('santri-page').textContent = `${page} / ${pages}`;
-                document.getElementById('santri-pagination').hidden = false;
-                previous.disabled = page <= 1;
-                next.disabled = page >= pages;
-            };
-            search.addEventListener('input', () => { page = 1; render(); });
-            limit.addEventListener('change', () => { page = 1; render(); });
-            previous.addEventListener('click', () => { if (page > 1) { page--; render(); } });
-            next.addEventListener('click', () => { page++; render(); });
-            render();
-        })();
-    </script>
+<div id="table-search-config"
+     data-search-id="santri-search"
+     data-limit-id="santri-limit"
+     data-row-selector="[data-santri-row]"
+     data-prev-id="santri-prev"
+     data-next-id="santri-next"
+     data-empty-id="santri-empty"
+     data-empty-title-id="santri-empty-title"
+     data-empty-text-id="santri-empty-text"
+     data-summary-id="santri-summary"
+     data-page-id="santri-page"
+     data-pagination-id="santri-pagination"
+     data-entity-label="santri"></div>
+<script src="<?= BASEURL ?>/js/table-search.js"></script>

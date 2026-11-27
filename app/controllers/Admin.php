@@ -229,8 +229,7 @@
             }
         }
 
-        public function hapusUser($id){
-            $role = $_POST['role'];
+        public function hapusUser($id, $role = ''){
             $redirect = match ($role){
                 'admin' => BASEURL.'/Admin/admin',
                 'guru' => BASEURL.'/Admin/guru',

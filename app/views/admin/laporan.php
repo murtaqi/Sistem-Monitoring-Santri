@@ -189,153 +189,20 @@ foreach ($urutanHafalan as $status) {
     </div>
 </section>
 
+<?php
+$chartPayload = htmlspecialchars(json_encode([
+    'absensiLabels' => $labelsAbsensi,
+    'absensiData' => $dataAbsensi,
+    'persenLabels' => $labelsPersen,
+    'persenData' => $dataPersen,
+    'pelanggaranLabels' => $labelsPelanggaran,
+    'pelanggaranData' => $dataPelanggaran,
+    'hafalanLabels' => $labelsHafalan,
+    'hafalanData' => $dataHafalan,
+    'bulanLabels' => $namaBulan,
+    'bulanData' => array_values($dataBulanan),
+], JSON_UNESCAPED_UNICODE), ENT_QUOTES, 'UTF-8');
+?>
+<div id="dashboard-chart-data" data-chart="<?= $chartPayload ?>"></div>
 <script src="<?= BASEURL ?>/js/chart.umd.min.js"></script>
-<script>
-(function () {
-    const absensiLabels = <?= json_encode($labelsAbsensi) ?>;
-    const absensiData   = <?= json_encode($dataAbsensi) ?>;
-    const persenLabels  = <?= json_encode($labelsPersen) ?>;
-    const persenData    = <?= json_encode($dataPersen) ?>;
-    const pelanggaranLabels = <?= json_encode($labelsPelanggaran) ?>;
-    const pelanggaranData   = <?= json_encode($dataPelanggaran) ?>;
-    const hafalanLabels     = <?= json_encode($labelsHafalan) ?>;
-    const hafalanData       = <?= json_encode($dataHafalan) ?>;
-    const bulanLabels       = <?= json_encode($namaBulan) ?>;
-    const bulanData         = <?= json_encode(array_values($dataBulanan)) ?>;
-
-    const warnaStatus = { 'Hadir': '#16745c', 'Izin': '#e0a800', 'Sakit': '#e07b39', 'Alpha': '#d1453b' };
-    const warnaPelanggaran = { 'Belum Selesai': '#d1453b', 'Selesai': '#16745c' };
-    const warnaHafalan = { 'Lancar': '#16745c', 'Kurang Lancar': '#e0a800', 'Belum Lancar': '#d1453b' };
-    const garis = '#e5ebe7';
-    const teks = '#728079';
-
-    Chart.defaults.font.family = getComputedStyle(document.body).fontFamily;
-    Chart.defaults.color = teks;
-
-    const legendaBawah = {
-        position: 'bottom',
-        labels: { usePointStyle: true, pointStyle: 'circle', padding: 16 }
-    };
-
-    new Chart(document.getElementById('chartKehadiran'), {
-        type: 'bar',
-        data: {
-            labels: absensiLabels,
-            datasets: [{
-                label: 'Jumlah Santri',
-                data: absensiData,
-                backgroundColor: absensiLabels.map(s => warnaStatus[s] || '#728079'),
-                borderRadius: 6,
-                maxBarThickness: 70
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: legendaBawah,
-                tooltip: { callbacks: { label: ctx => ctx.parsed.y + ' catatan' } }
-            },
-            scales: {
-                y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: garis } },
-                x: { grid: { display: false } }
-            }
-        }
-    });
-
-    new Chart(document.getElementById('chartPersentase'), {
-        type: 'pie',
-        data: {
-            labels: persenLabels,
-            datasets: [{
-                label: 'Persentase',
-                data: persenData,
-                backgroundColor: persenLabels.map(s => warnaStatus[s] || '#728079'),
-                borderWidth: 2,
-                borderColor: '#ffffff'
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: legendaBawah,
-                tooltip: { callbacks: { label: ctx => ctx.label + ': ' + ctx.parsed + '%' } }
-            }
-        }
-    });
-
-    new Chart(document.getElementById('chartPelanggaran'), {
-        type: 'pie',
-        data: {
-            labels: pelanggaranLabels,
-            datasets: [{
-                label: 'Pelanggaran',
-                data: pelanggaranData,
-                backgroundColor: pelanggaranLabels.map(s => warnaPelanggaran[s] || '#728079'),
-                borderWidth: 2,
-                borderColor: '#ffffff'
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: legendaBawah,
-                tooltip: { callbacks: { label: ctx => ctx.label + ': ' + ctx.parsed + ' kasus' } }
-            }
-        }
-    });
-
-    new Chart(document.getElementById('chartHafalan'), {
-        type: 'pie',
-        data: {
-            labels: hafalanLabels,
-            datasets: [{
-                label: 'Hafalan',
-                data: hafalanData,
-                backgroundColor: hafalanLabels.map(s => warnaHafalan[s] || '#728079'),
-                borderWidth: 2,
-                borderColor: '#ffffff'
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: legendaBawah,
-                tooltip: { callbacks: { label: ctx => ctx.label + ': ' + ctx.parsed + ' setoran' } }
-            }
-        }
-    });
-
-    new Chart(document.getElementById('chartTrenBulanan'), {
-        type: 'line',
-        data: {
-            labels: bulanLabels,
-            datasets: [{
-                label: 'Jumlah Catatan Absensi',
-                data: bulanData,
-                borderColor: '#16745c',
-                backgroundColor: 'rgba(22, 116, 92, 0.12)',
-                fill: true,
-                tension: 0.3,
-                pointRadius: 4,
-                pointBackgroundColor: '#16745c'
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: legendaBawah,
-                tooltip: { callbacks: { label: ctx => ctx.parsed.y + ' catatan' } }
-            },
-            scales: {
-                y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: garis } },
-                x: { grid: { display: false } }
-            }
-        }
-    });
-})();
-</script>
+<script src="<?= BASEURL ?>/js/dashboard-charts.js"></script>

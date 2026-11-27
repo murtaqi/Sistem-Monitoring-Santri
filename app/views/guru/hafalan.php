@@ -1,6 +1,8 @@
 <?php
 $records = $data['hafalan'] ?? [];
 $santriList = $data['santri'] ?? [];
+$kelasList = array_values(array_unique(array_filter(array_map(static fn($s) => trim((string)($s['kelas'] ?? '')), $santriList))));
+sort($kelasList);
 $escape = static function ($value) {
     return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
 };
@@ -26,7 +28,16 @@ $escape = static function ($value) {
     <div class="toolbar">
         <div class="field search-field">
             <label for="tbl-search">Cari hafalan</label>
-            <input type="search" id="tbl-search" placeholder="Cari nama santri, surah, atau juz..." autocomplete="off">
+            <input type="search" id="tbl-search" placeholder="Cari nama santri, NIS, surah, atau juz..." autocomplete="off">
+        </div>
+        <div class="field">
+            <label for="tbl-kelas">Filter Kelas</label>
+            <select id="tbl-kelas">
+                <option value="">Semua Kelas</option>
+                <?php foreach ($kelasList as $kelas): ?>
+                    <option value="<?= $escape($kelas) ?>"><?= $escape($kelas) ?></option>
+                <?php endforeach; ?>
+            </select>
         </div>
         <div class="field">
             <label for="tbl-limit">Baris per halaman</label>
@@ -55,10 +66,13 @@ $escape = static function ($value) {
             </thead>
             <tbody>
                 <?php foreach ($records as $index => $record): ?>
-                    <tr data-row <?= $index >= 10 ? 'hidden' : '' ?>>
+                    <tr data-row data-kelas="<?= $escape($record['kelas'] ?? '') ?>" <?= $index >= 10 ? 'hidden' : '' ?>>
                         <td class="number"><?= $index + 1 ?></td>
                         <td><?= $escape($record['tanggal'] ?? '-') ?></td>
-                        <td class="admin-name"><?= $escape($record['nama_santri'] ?? '-') ?></td>
+                        <td class="admin-name">
+                            <?= $escape($record['nama_santri'] ?? '-') ?>
+                            <small style="display:block;color:#6c757d;font-weight:400;">NIS: <?= $escape($record['nis'] ?? '-') ?> &middot; Kelas <?= $escape($record['kelas'] ?? '-') ?></small>
+                        </td>
                         <td><?= $escape($record['surah'] ?? '-') ?></td>
                         <td><?= $escape($record['juz'] ?? '-') ?></td>
                         <td><?= $escape($record['ayat'] ?? '-') ?></td>
@@ -83,6 +97,7 @@ $escape = static function ($value) {
                                     data-id="<?= $escape($record['id_hafalan'] ?? '') ?>"
                                     data-tanggal="<?= $escape($record['tanggal'] ?? '') ?>"
                                     data-id-santri="<?= $escape($record['id_santri'] ?? '') ?>"
+                                    data-nis="<?= $escape($record['nis'] ?? '') ?>"
                                     data-surah="<?= $escape($record['surah'] ?? '') ?>"
                                     data-juz="<?= $escape($record['juz'] ?? '') ?>"
                                     data-ayat="<?= $escape($record['ayat'] ?? '') ?>"
@@ -126,15 +141,20 @@ $escape = static function ($value) {
                         <input type="date" class="form-control" id="tanggal" name="tanggal" required value="<?= date('Y-m-d') ?>">
                     </div>
                     <div class="mb-3">
-                        <label for="id_santri" class="form-label">Santri</label>
-                        <select class="form-select" id="id_santri" name="id_santri" required>
-                            <option value="">-- Pilih Santri --</option>
+                        <label for="nis_santri" class="form-label">NIS Santri</label>
+                        <input type="hidden" id="id_santri" name="id_santri">
+                        <input type="text" class="form-control" id="nis_santri" name="nis" list="list-nis-santri" autocomplete="off" required placeholder="Ketik angka NIS santri...">
+                        <datalist id="list-nis-santri">
                             <?php foreach ($santriList as $santri): ?>
-                                <option value="<?= $escape($santri['id_santri'] ?? '') ?>">
-                                    <?= $escape($santri['nama_santri'] ?? '') ?> (<?= $escape($santri['nis'] ?? '-') ?> - <?= $escape($santri['kelas'] ?? '-') ?>)
+                                <option value="<?= $escape($santri['nis'] ?? '') ?>"
+                                        data-id="<?= $escape($santri['id_santri'] ?? '') ?>"
+                                        data-nama="<?= $escape($santri['nama_santri'] ?? '') ?>"
+                                        data-kelas="<?= $escape($santri['kelas'] ?? '-') ?>">
+                                    <?= $escape($santri['nama_santri'] ?? '') ?> (Kelas <?= $escape($santri['kelas'] ?? '-') ?>)
                                 </option>
                             <?php endforeach; ?>
-                        </select>
+                        </datalist>
+                        <small id="santri-info" class="form-text text-muted">Ketik angka NIS untuk melihat daftar santri.</small>
                     </div>
                     <div class="mb-3">
                         <label for="surah" class="form-label">Surah</label>
@@ -175,67 +195,14 @@ $escape = static function ($value) {
     </div>
 </div>
 
-<script>
-(() => {
-    const form = document.getElementById('formHafalan');
-    const title = document.getElementById('modalHafalanLabel');
-    const submitBtn = document.getElementById('btnSubmit');
-
-    document.getElementById('btnTambah').addEventListener('click', () => {
-        form.action = BASEURL + '/Guru/tambahHafalan';
-        title.textContent = 'Tambah Hafalan';
-        submitBtn.textContent = 'Tambah Data';
-        form.reset();
-        document.getElementById('id_hafalan').value = '';
-        document.getElementById('tanggal').value = new Date().toISOString().slice(0,10);
-    });
-
-    document.querySelectorAll('.btn-edit').forEach(btn => {
-        btn.addEventListener('click', () => {
-            form.action = BASEURL + '/Guru/updateHafalan';
-            title.textContent = 'Edit Hafalan';
-            submitBtn.textContent = 'Simpan Perubahan';
-            document.getElementById('id_hafalan').value = btn.dataset.id;
-            document.getElementById('tanggal').value = btn.dataset.tanggal;
-            document.getElementById('id_santri').value = btn.dataset.idSantri;
-            document.getElementById('surah').value = btn.dataset.surah;
-            document.getElementById('juz').value = btn.dataset.juz;
-            document.getElementById('ayat').value = btn.dataset.ayat;
-            document.getElementById('status_setoran').value = btn.dataset.status;
-            document.getElementById('nilai_kelancaran').value = btn.dataset.nilai;
-        });
-    });
-
-    // --- Search & Pagination ---
-    const search = document.getElementById('tbl-search');
-    if (!search) return;
-    const limit = document.getElementById('tbl-limit');
-    const rows = Array.from(document.querySelectorAll('[data-row]'));
-    const records = rows.map(row => ({ row, text: Array.from(row.cells).slice(1).map(c => c.textContent).join(' ').toLocaleLowerCase('id') }));
-    const prev = document.getElementById('tbl-prev');
-    const next = document.getElementById('tbl-next');
-    let page = 1;
-    const render = () => {
-        const kw = search.value.trim().toLocaleLowerCase('id');
-        const matches = records.filter(r => r.text.includes(kw));
-        const size = Number(limit.value);
-        const pages = Math.max(1, Math.ceil(matches.length / size));
-        page = Math.min(page, pages);
-        const start = (page - 1) * size;
-        rows.forEach(r => { r.row.hidden = true; });
-        matches.slice(start, start + size).forEach((r, i) => { r.row.hidden = false; r.row.cells[0].textContent = start + i + 1; });
-        document.getElementById('row-empty').hidden = matches.length > 0;
-        document.getElementById('tbl-summary').textContent = `Menampilkan ${matches.length ? start + 1 : 0}–${Math.min(start + size, matches.length)} dari ${matches.length} data${kw ? ` (total ${rows.length})` : ''}`;
-        document.getElementById('tbl-page').textContent = `${page} / ${pages}`;
-        document.getElementById('tbl-pagination').hidden = false;
-        prev.disabled = page <= 1;
-        next.disabled = page >= pages;
-    };
-    search.addEventListener('input', () => { page = 1; render(); });
-    limit.addEventListener('change', () => { page = 1; render(); });
-    prev.addEventListener('click', () => { if (page > 1) { page--; render(); } });
-    next.addEventListener('click', () => { page++; render(); });
-    render();
-})();
-</script>
+<div id="guru-kegiatan-config"
+     data-form-id="formHafalan"
+     data-title-id="modalHafalanLabel"
+     data-id-field="id_hafalan"
+     data-tambah-url="/Guru/tambahHafalan"
+     data-update-url="/Guru/updateHafalan"
+     data-tambah-title="Tambah Hafalan"
+     data-edit-title="Edit Hafalan"
+     data-field-map='{"surah":"surah","juz":"juz","ayat":"ayat","status_setoran":"status","nilai_kelancaran":"nilai"}'></div>
+<script src="<?= BASEURL ?>/js/guru-kegiatan.js"></script>
 

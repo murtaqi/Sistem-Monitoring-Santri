@@ -55,9 +55,17 @@
                 $this->redirectGuru($section, 'Akun guru tidak ditemukan', 'danger');
             }
             $idSantri = (int) ($_POST['id_santri'] ?? 0);
+            $nis = trim((string) ($_POST['nis'] ?? ''));
+            $santriModel = $this->model('Santri_model');
+            if ($idSantri <= 0 && $nis !== '') {
+                $santriByNis = $santriModel->getSantriByNis($nis);
+                if ($santriByNis && isset($santriByNis['id_santri'])) {
+                    $idSantri = (int) $santriByNis['id_santri'];
+                }
+            }
             $tanggal = trim((string) ($_POST['tanggal'] ?? ''));
-            if ($idSantri <= 0 || !$this->model('Santri_model')->getById($idSantri)) {
-                $this->redirectGuru($section, 'Santri tidak valid', 'danger');
+            if ($idSantri <= 0 || !$santriModel->getById($idSantri)) {
+                $this->redirectGuru($section, 'Santri / NIS tidak valid', 'danger');
             }
             if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $tanggal)) {
                 $this->redirectGuru($section, 'Tanggal tidak valid', 'danger');

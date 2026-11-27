@@ -145,64 +145,19 @@ $escape = static function ($value) {
     </div>
 </div>
 
-<script>
-(() => {
-    const form = document.getElementById('formSantri');
-    const title = document.getElementById('modalSantriLabel');
-    const submitBtn = document.getElementById('btnSubmit');
-
-    document.getElementById('btnTambahSantri').addEventListener('click', () => {
-        form.action = BASEURL + '/Santri/tambahSantri';
-        title.textContent = 'Tambah Santri';
-        submitBtn.textContent = 'Tambah Data';
-        form.reset();
-        document.getElementById('id_santri').value = '';
-    });
-
-    document.querySelectorAll('.btn-edit').forEach(btn => {
-        btn.addEventListener('click', () => {
-            form.action = BASEURL + '/Santri/editSantri';
-            title.textContent = 'Edit Santri';
-            submitBtn.textContent = 'Simpan Perubahan';
-            document.getElementById('id_santri').value = btn.dataset.id;
-            document.getElementById('nis').value = btn.dataset.nis;
-            document.getElementById('nama_santri').value = btn.dataset.nama;
-            document.getElementById('kelas').value = btn.dataset.kelas;
-            document.getElementById('target_juz').value = btn.dataset.juz;
-            document.getElementById('id_ortu').value = btn.dataset.ortu || '';
-            document.getElementById('kontak').value = btn.dataset.kontak;
-        });
-    });
-
-    // --- Search & Pagination ---
-    const search = document.getElementById('santri-search');
-    if (!search) return;
-    const limit = document.getElementById('santri-limit');
-    const rows = Array.from(document.querySelectorAll('[data-row]'));
-    const records = rows.map(row => ({ row, text: Array.from(row.cells).slice(1).map(c => c.textContent).join(' ').toLocaleLowerCase('id') }));
-    const prev = document.getElementById('tbl-prev');
-    const next = document.getElementById('tbl-next');
-    let page = 1;
-    const render = () => {
-        const kw = search.value.trim().toLocaleLowerCase('id');
-        const matches = records.filter(r => r.text.includes(kw));
-        const size = Number(limit.value);
-        const pages = Math.max(1, Math.ceil(matches.length / size));
-        page = Math.min(page, pages);
-        const start = (page - 1) * size;
-        rows.forEach(r => { r.row.hidden = true; });
-        matches.slice(start, start + size).forEach((r, i) => { r.row.hidden = false; r.row.cells[0].textContent = start + i + 1; });
-        document.getElementById('row-empty').hidden = matches.length > 0;
-        document.getElementById('tbl-summary').textContent = `Menampilkan ${matches.length ? start + 1 : 0}–${Math.min(start + size, matches.length)} dari ${matches.length} santri${kw ? ` (total ${rows.length} data)` : ''}`;
-        document.getElementById('tbl-page').textContent = `${page} / ${pages}`;
-        document.getElementById('tbl-pagination').hidden = false;
-        prev.disabled = page <= 1;
-        next.disabled = page >= pages;
-    };
-    search.addEventListener('input', () => { page = 1; render(); });
-    limit.addEventListener('change', () => { page = 1; render(); });
-    prev.addEventListener('click', () => { if (page > 1) { page--; render(); } });
-    next.addEventListener('click', () => { page++; render(); });
-    render();
-})();
-</script>
+<div id="admin-data-config"
+     data-mode="santri"
+     data-form-id="formSantri"
+     data-title-id="modalSantriLabel"
+     data-submit-id="btnSubmit"
+     data-tambah-btn-id="btnTambahSantri"
+     data-id-field="id_santri"
+     data-tambah-url="/Santri/tambahSantri"
+     data-update-url="/Santri/editSantri"
+     data-tambah-title="Tambah Santri"
+     data-edit-title="Edit Santri"
+     data-field-map='{"nis":"nis","nama_santri":"nama","kelas":"kelas","target_juz":"juz","id_ortu":"ortu","kontak":"kontak"}'
+     data-search-id="santri-search"
+     data-limit-id="santri-limit"
+     data-entity-label="santri"></div>
+<script src="<?= BASEURL ?>/js/admin-data.js"></script>
